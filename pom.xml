@@ -10,7 +10,8 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
-        <module>feed</module>
+        <module>rtd-feed</module>
+        <module>rtd-stream</module>
     </modules>
 
 </project>

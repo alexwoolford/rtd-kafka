@@ -37,6 +37,9 @@ public class FeedPoller {
     @Scheduled(cron="*/30 * * * * *")
     private void getBusPositions() {
         try {
+
+            // Docs for stream source available here: http://www.rtd-denver.com/gtfs-developer-guide.shtml#samples
+
             logger.info("Getting latest vehicle positions from RTD feed.");
             URL url = new URL("http://www.rtd-denver.com/google_sync/VehiclePosition.pb");
             URLConnection uc = url.openConnection();
@@ -61,7 +64,6 @@ public class FeedPoller {
                         .build();
 
                 kafkaTemplate.send(message);
-
             }
 
             logger.info("Published latest vehicle positions to Kafka.");
