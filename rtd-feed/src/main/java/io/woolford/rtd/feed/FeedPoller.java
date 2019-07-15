@@ -41,6 +41,8 @@ public class FeedPoller {
             // Docs for stream source available here: http://www.rtd-denver.com/gtfs-developer-guide.shtml#samples
 
             logger.info("Getting latest vehicle positions from RTD feed.");
+
+            // get inputstream of the latest vehicle positions
             URL url = new URL("http://www.rtd-denver.com/google_sync/VehiclePosition.pb");
             URLConnection uc = url.openConnection();
             String userpass = rtdUsername + ":" + rtdPassword;
@@ -48,21 +50,26 @@ public class FeedPoller {
             uc.setRequestProperty("Authorization", basicAuth);
             InputStream in = uc.getInputStream();
 
+            // parse inputstream into feed and iterate over records
             GtfsRealtime.FeedMessage feed = GtfsRealtime.FeedMessage.parseFrom(in);
             for (GtfsRealtime.FeedEntity entity : feed.getEntityList()) {
 
+                // parse vehicle positions into POJO
                 BusPosition busPosition = new BusPosition();
                 busPosition.setId(entity.getVehicle().getVehicle().getId());
                 busPosition.setTimestamp(entity.getVehicle().getTimestamp());
                 busPosition.setLatitude(entity.getVehicle().getPosition().getLatitude());
                 busPosition.setLongitude(entity.getVehicle().getPosition().getLongitude());
 
+                // create message with vehicle ID as the key. This means that all the records from the same vehicle
+                // are written to the same partition.
                 Message<BusPosition> message = MessageBuilder
                         .withPayload(busPosition)
                         .setHeader(KafkaHeaders.TOPIC, "rtd-bus-position")
                         .setHeader(KafkaHeaders.MESSAGE_KEY, entity.getVehicle().getVehicle().getId())
                         .build();
 
+                // publish to `rtd-bus-position` Kafka topic
                 kafkaTemplate.send(message);
             }
 
