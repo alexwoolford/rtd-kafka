@@ -1,7 +1,7 @@
 package io.woolford.rtd.feed;
 
-
 import com.google.transit.realtime.GtfsRealtime;
+import kong.unirest.Unirest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +15,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Base64;
 
 @Component
 @EnableScheduling
@@ -34,52 +31,51 @@ public class FeedPoller {
     @Autowired
     KafkaTemplate<String, BusPosition> kafkaTemplate;
 
-    @Scheduled(cron="*/30 * * * * *")
+    @Scheduled(cron = "*/30 * * * * *")
     private void getBusPositions() {
         try {
-
             // Docs for stream source available here: http://www.rtd-denver.com/gtfs-developer-guide.shtml#samples
-
             logger.info("Getting latest vehicle positions from RTD feed.");
 
-            // get inputstream of the latest vehicle positions
-            URL url = new URL("http://www.rtd-denver.com/google_sync/VehiclePosition.pb");
-            URLConnection uc = url.openConnection();
-            String userpass = rtdUsername + ":" + rtdPassword;
-            String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-            uc.setRequestProperty("Authorization", basicAuth);
-            InputStream in = uc.getInputStream();
+            // get latest vehicle positions
+            String userName = "RTDgtfsRT";
+            String password = "realT!m3Feed";
+            String url = "http://www.rtd-denver.com/google_sync/VehiclePosition.pb";
 
-            // parse inputstream into feed and iterate over records
-            GtfsRealtime.FeedMessage feed = GtfsRealtime.FeedMessage.parseFrom(in);
-            for (GtfsRealtime.FeedEntity entity : feed.getEntityList()) {
+            Unirest.get(url)
+                    .basicAuth(userName, password)
+                    .thenConsume(rawResponse -> {
+                        try {
+                            InputStream stream = rawResponse.getContent();
 
-                // parse vehicle positions into POJO
-                BusPosition busPosition = new BusPosition();
-                busPosition.setId(entity.getVehicle().getVehicle().getId());
-                busPosition.setTimestamp(entity.getVehicle().getTimestamp());
-                busPosition.setLatitude(entity.getVehicle().getPosition().getLatitude());
-                busPosition.setLongitude(entity.getVehicle().getPosition().getLongitude());
+                            GtfsRealtime.FeedMessage feed = GtfsRealtime.FeedMessage.parseFrom(stream);
 
-                // create message with vehicle ID as the key. This means that all the records from the same vehicle
-                // are written to the same partition.
-                Message<BusPosition> message = MessageBuilder
-                        .withPayload(busPosition)
-                        .setHeader(KafkaHeaders.TOPIC, "rtd-bus-position")
-                        .setHeader(KafkaHeaders.MESSAGE_KEY, entity.getVehicle().getVehicle().getId())
-                        .build();
+                            for (GtfsRealtime.FeedEntity entity : feed.getEntityList()) {
+                                GtfsRealtime.VehiclePosition vehiclePosition = entity.getVehicle();
 
-                // publish to `rtd-bus-position` Kafka topic
-                kafkaTemplate.send(message);
-            }
+                                BusPosition busPosition = BusPosition.build(
+                                        vehiclePosition.getVehicle().getId(),
+                                        vehiclePosition.getTimestamp(),
+                                        vehiclePosition.getPosition()
+                                );
+
+                                Message<BusPosition> message = MessageBuilder
+                                        .withPayload(busPosition)
+                                        .setHeader(KafkaHeaders.TOPIC, "rtd-bus-position")
+                                        .setHeader(KafkaHeaders.MESSAGE_KEY, entity.getVehicle().getVehicle().getId())
+                                        .build();
+
+                                // publish to `rtd-bus-position` Kafka topic
+                                kafkaTemplate.send(message);
+                            }
+                        } catch (Exception e) {
+                            throw new Error(e);
+                        }
+                    });
 
             logger.info("Published latest vehicle positions to Kafka.");
-
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
-
     }
-
-
 }

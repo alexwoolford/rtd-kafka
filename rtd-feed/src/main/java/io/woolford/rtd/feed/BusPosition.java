@@ -1,11 +1,27 @@
 package io.woolford.rtd.feed;
 
+import com.google.transit.realtime.GtfsRealtime;
+
 public class BusPosition {
 
     private String id;
     private long timestamp;
     private double latitude;
     private double longitude;
+
+    static BusPosition build(String id, long timestamp, GtfsRealtime.Position position) {
+        return new BusPosition(id, timestamp, position.getLatitude(), position.getLongitude());
+    }
+
+    private BusPosition(String id, long timestamp, double latitude, double longitude) {
+        this.id = id;
+        this.timestamp = timestamp;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public BusPosition() {
+    }
 
     public String getId() {
         return id;
