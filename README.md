@@ -23,3 +23,9 @@ The __rtd-stream__ module is a Kafka Streams job that enriches the feed data wit
       "milesPerHour": 29.688610924964976,
       "geohash": "9xj3vtr"
     }
+
+
+
+See the feed in action:
+
+[![Real-time vehicle telemetry analysis with Kafka Streams](https://img.youtube.com/vi/yIFOCYy7Wmc/0.jpg)](https://www.youtube.com/watch?v=yIFOCYy7Wmc)
