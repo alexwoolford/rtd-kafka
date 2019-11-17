@@ -19,23 +19,27 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${schema.registry.url}")
+    private String schemaRegistryUrl;
+
     @Bean
     public Map<String, Object> producerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+        props.put("schema.registry.url", schemaRegistryUrl);
         props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
         return props;
     }
 
     @Bean
-    public ProducerFactory<String, BusPosition> producerFactory() {
+    public ProducerFactory<String, io.woolford.rtd.BusPosition> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String, BusPosition> kafkaTemplate() {
+    public KafkaTemplate<String, io.woolford.rtd.BusPosition> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 

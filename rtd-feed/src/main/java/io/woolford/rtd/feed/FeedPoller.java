@@ -1,6 +1,8 @@
 package io.woolford.rtd.feed;
 
 import com.google.transit.realtime.GtfsRealtime;
+import io.woolford.rtd.BusPosition;
+import io.woolford.rtd.Location;
 import kong.unirest.Unirest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,11 +55,15 @@ public class FeedPoller {
                             for (GtfsRealtime.FeedEntity entity : feed.getEntityList()) {
                                 GtfsRealtime.VehiclePosition vehiclePosition = entity.getVehicle();
 
-                                BusPosition busPosition = BusPosition.build(
-                                        vehiclePosition.getVehicle().getId(),
-                                        vehiclePosition.getTimestamp(),
-                                        vehiclePosition.getPosition()
-                                );
+                                Location location = new Location();
+                                location.setLat(vehiclePosition.getPosition().getLatitude());
+                                location.setLon(vehiclePosition.getPosition().getLongitude());
+
+                                BusPosition busPosition = new BusPosition();
+
+                                busPosition.setId(vehiclePosition.getVehicle().getId());
+                                busPosition.setTimestamp(vehiclePosition.getTimestamp());
+                                busPosition.setLocation(location);
 
                                 Message<BusPosition> message = MessageBuilder
                                         .withPayload(busPosition)
