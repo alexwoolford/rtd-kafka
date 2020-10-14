@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.woolford</groupId>
-    <artifactId>rtd-bus-feed</artifactId>
+    <artifactId>rtd-feed-stream</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <modules>
         <module>rtd-feed</module>
