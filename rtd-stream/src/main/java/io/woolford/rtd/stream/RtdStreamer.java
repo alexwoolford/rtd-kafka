@@ -1,10 +1,8 @@
 package io.woolford.rtd.stream;
 
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import io.woolford.rtd.BusPosition;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 
@@ -13,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -23,17 +23,18 @@ public class RtdStreamer {
 
     private static HashMap<String, BusPosition> previousBusPositionMap = new HashMap<String, BusPosition>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-        // set props for Kafka Steams app (see KafkaConstants)
+        // create and load default properties
         Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, KafkaConstants.APPLICATION_ID);
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConstants.KAFKA_BROKERS);
+        String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+        String propsPath = rootPath + "config.properties";
+        FileInputStream in = new FileInputStream(propsPath);
+        props.load(in);
+        in.close();
+
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, KafkaConstants.SCHEMA_REGISTRY_URL);
-        props.put(StreamsConfig.PRODUCER_PREFIX + ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
-        props.put(StreamsConfig.CONSUMER_PREFIX + ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor");
 
         final StreamsBuilder builder = new StreamsBuilder();
 

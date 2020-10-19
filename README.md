@@ -69,6 +69,10 @@ The following `curl` command was then run to create the connector:
     }' http://cp01.woolford.io:8083/connectors/rtd-elastic/config
 
 
+Here's a diagram of the solution:
+
+![topology](rtd-arch.png)
+
 Here's a screenshot from the Kibana dashboard:
 
 ![Kibana screenshot](rtd-elastic.png)
