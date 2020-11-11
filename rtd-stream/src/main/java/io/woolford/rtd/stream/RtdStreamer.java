@@ -31,7 +31,7 @@ public class RtdStreamer {
 
         //TODO: create required topics
 
-        //TODO: add topology diagram to README.md
+        //TODO: add gauges/counters, etc... so they can be exposed in Prometheus
 
         final StreamsBuilder builder = new StreamsBuilder();
 
