@@ -3,30 +3,40 @@ package io.woolford.rtd.stream;
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import io.woolford.rtd.BusPosition;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.Stores;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 
 public class RtdStreamer {
 
-    private static Logger logger = LoggerFactory.getLogger(RtdStreamer.class);
-
-    private static HashMap<String, BusPosition> previousBusPositionMap = new HashMap<String, BusPosition>();
+    private static final Logger LOG = LoggerFactory.getLogger(RtdStreamer.class);
 
     public static void main(String[] args) throws IOException {
 
+        //TODO: log interesting events
+
+        //TODO: create required topics
+
+        //TODO: add topology diagram to README.md
+
+        final StreamsBuilder builder = new StreamsBuilder();
+
         // create and load default properties
-        Properties props = new Properties();
+        final Properties props = new Properties();
         String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
         String propsPath = rootPath + "config.properties";
         FileInputStream in = new FileInputStream(propsPath);
@@ -36,62 +46,35 @@ public class RtdStreamer {
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
-        final StreamsBuilder builder = new StreamsBuilder();
+        final Serde<BusPosition> serdeBusPosition = new SpecificAvroSerde<>();
+        serdeBusPosition.configure((Map) props, false);
 
-        KStream<String, BusPosition> rtdBusPositionStream = builder.stream("rtd-bus-position");
+        final StoreBuilder<KeyValueStore<String, BusPosition>> busPositionStore = Stores.keyValueStoreBuilder(
+                Stores.persistentKeyValueStore("busPositionStore"),
+                Serdes.String(),
+                Serdes.serdeFrom(serdeBusPosition.serializer(), serdeBusPosition.deserializer()));
 
-        rtdBusPositionStream.mapValues(value -> {
-            value = RtdStreamer.enrichBusPosition(value);
-            return value;
-        }).to("rtd-bus-position-enriched");
+        builder.addStateStore(busPositionStore);
+
+        final KStream<String, BusPosition> rtdBusPositionStream = builder.stream("rtd-bus-position");
+
+        final KStream<String, BusPosition> rtdBusPositionStreamEnriched =
+                rtdBusPositionStream.transform(new HaversineTransformerSupplier("busPositionStore"), "busPositionStore");
+
+        rtdBusPositionStreamEnriched.to("rtd-bus-position-enriched");
 
         // run it
         final Topology topology = builder.build();
+
+        LOG.info(topology.describe().toString());
+
         final KafkaStreams streams = new KafkaStreams(topology, props);
         streams.start();
+        streams.cleanUp();
 
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
-    }
-
-    private static BusPosition enrichBusPosition(BusPosition busPosition) {
-
-        // current bus ID
-        String busId = busPosition.getId().toString();
-
-        // if there is a previous location for that bus ID, calculate the speed based on its previous position/timestamp.
-        if (previousBusPositionMap.containsKey(busId)){
-            BusPosition previousBusPosition = previousBusPositionMap.get(busId);
-
-            // calculate distance and time between last two measurements
-            HaversineDistanceCalculator haversineDistanceCalculator = new HaversineDistanceCalculator();
-            double distance = haversineDistanceCalculator.calculateDistance(
-                    previousBusPosition.getLocation().getLat(),
-                    previousBusPosition.getLocation().getLon(),
-                    busPosition.getLocation().getLat(),
-                    busPosition.getLocation().getLon()); // distance is in kilometers
-
-            long timedelta = busPosition.getTimestamp() - previousBusPosition.getTimestamp(); // time delta is in seconds
-            double milesPerHour = calculateMilesPerHour(distance, timedelta);
-
-            busPosition.setMilesPerHour(milesPerHour);
-
-        }
-
-        previousBusPositionMap.put(busId, busPosition);
-
-        return busPosition;
-
-    }
-
-    private static double calculateMilesPerHour(double meters, long seconds) {
-        if (seconds == 0){
-            return 0;
-        } else {
-            double metersPerSecond = meters * 1000 / seconds;
-            return metersPerSecond * 2.2369;
-        }
     }
 
 }

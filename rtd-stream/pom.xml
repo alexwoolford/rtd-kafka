@@ -13,6 +13,7 @@
 
     <properties>
         <confluent.version>6.0.0</confluent.version>
+        <kafka.version>2.6.0</kafka.version>
         <avro.version>1.10.0</avro.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
@@ -21,8 +22,15 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
-            <version>2.6.0</version>
+            <version>${kafka.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-streams-avro-serde</artifactId>
@@ -52,6 +60,11 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
+            <version>${confluent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-streams-avro-serde</artifactId>
             <version>${confluent.version}</version>
         </dependency>
 
