@@ -60,15 +60,21 @@ The following `curl` command was then run to create the connector:
 
     curl -X PUT -H "Content-Type: application/json" --data '
     {
-        "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
-        "type.name": "_doc",
-        "topics": "rtd-bus-position-enriched",
-        "name": "rtd-elastic",
         "connection.url": "http://elastic.woolford.io:9200",
-        "key.ignore": "true",
+        "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
         "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-        "schema.ignore": "true"
+        "key.ignore": "true",
+        "name": "rtd-elastic",
+        "schema.ignore": "true",
+        "topics": "rtd-bus-position-enriched",
+        "transforms": "routeTS",
+        "transforms.routeTS.timestamp.format": "yyyyMMdd",
+        "transforms.routeTS.topic.format": "${topic}-${timestamp}",
+        "transforms.routeTS.type": "org.apache.kafka.connect.transforms.TimestampRouter",
+        "type.name": "_doc"
     }' http://cp01.woolford.io:8083/connectors/rtd-elastic/config
+
+Note the [`TimestampRouter`](https://docs.confluent.io/current/connect/transforms/timestamprouter.html#timestamprouter) single-message transform. This writes the messages into new index each day. That's very handy when it comes to purging old data from Elastic.
 
 Here's a diagram of the solution:
 
