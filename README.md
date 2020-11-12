@@ -87,7 +87,7 @@ See the feed in action:
 [![Real-time vehicle telemetry analysis with Kafka Streams](https://img.youtube.com/vi/yIFOCYy7Wmc/0.jpg)](https://www.youtube.com/watch?v=yIFOCYy7Wmc)
 
 
-## Build
+## build/run
 
 The Kafka and Schema Registry connection properties are read from environment variables:
 
@@ -103,15 +103,19 @@ The Kafka and Schema Registry connection properties are read from environment va
 | SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO      | no        | Schema Registry   |
 
 
-To create executable jars:
-
-Export environment variables and build the project:
+To create executable jars, build the project:
     
-    mvn generate-sources
+    git clone https://github.com/alexwoolford/rtd-kafka
+    cd rtd-kafka
     mvn package
 
-And then, to run `rtd-feed` and `rtd-stream`:
+And then, to run `rtd-feed` and `rtd-stream`, export the environment variables:
 
+    export BOOTSTRAP_SERVER=cp01.woolford.io:9092
+    export SCHEMA_REGISTRY_URL=http://cp01.woolford.io:8081
 
+... and then run the jars:
 
+    java -jar rtd-feed/target/feed-0.1-spring-boot.jar
+    java -jar rtd-stream/target/rtd-stream-1.0-jar-with-dependencies.jar
 
