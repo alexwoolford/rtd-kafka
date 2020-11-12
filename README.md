@@ -30,6 +30,8 @@ The __rtd-stream__ module is a Kafka Streams job that enriches the feed data wit
 
 Note that the milesPerHour has been updated.
 
+The `rtd-stream` module reads in Kafka and Schema Registry properties from environment variables.
+
 Once the enriched data is in Kafka, it can be written to Elastic using Kafka Connect. In order to recognise the timestamp and location using the proper datatypes, we create a dynamic template in Elastic:
 
     {
@@ -87,18 +89,29 @@ See the feed in action:
 
 ## Build
 
-To create an executable jar for the RTD feed:
+The Kafka and Schema Registry connection properties are read from environment variables:
 
-    cd rtd-feed
+| property                                  | mandatory | component         |
+| :---                                      |    :----: |      ---:         |
+| BOOTSTRAP_SERVERS                         | yes       | Kafka             |
+| SECURITY_PROTOCOL                         | no        | Kafka             |
+| SASL_JAAS_CONFIG                          | no        | Kafka             |
+| SASL_ENDPOINT_IDENTIFICATION_ALGORITHM    | no        | Kafka             |
+| SASL_MECHANISM                            | no        | Kafka             |       
+| SCHEMA_REGISTRY_URL                       | yes       | Schema Registry   |
+| BASIC_AUTH_CREDENTIALS_SOURCE             | no        | Schema Registry   |
+| SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO      | no        | Schema Registry   |
+
+
+To create executable jars:
+
+Export environment variables and build the project:
+    
     mvn generate-sources
     mvn package
-    
-This creates an executable jar: `target/feed-0.1-spring-boot.jar`.
 
-To create an executable jar for the Kafka Streams job that calculates the speed:
+And then, to run `rtd-feed` and `rtd-stream`:
 
-    cd rtd-stream
-    mvn generate-sources
-    mvn assembly:single
 
-This creates an executable jar: `target/rtd-stream-1.0.jar`
+
+
