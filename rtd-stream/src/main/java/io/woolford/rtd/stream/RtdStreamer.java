@@ -2,7 +2,8 @@ package io.woolford.rtd.stream;
 
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
-import io.woolford.rtd.BusPosition;
+import io.woolford.rtd.BusPositionFeed;
+import io.woolford.rtd.BusPositionSpeed;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
@@ -50,11 +51,11 @@ public class RtdStreamer {
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
         // BusPosition serializer/deserializer
-        final Serde<BusPosition> serdeBusPosition = new SpecificAvroSerde<>();
+        final Serde<BusPositionFeed> serdeBusPosition = new SpecificAvroSerde<>();
         serdeBusPosition.configure((Map) props, false);
 
         // create key/value store for bus positions
-        final StoreBuilder<KeyValueStore<String, BusPosition>> busPositionStore = Stores.keyValueStoreBuilder(
+        final StoreBuilder<KeyValueStore<String, BusPositionFeed>> busPositionStore = Stores.keyValueStoreBuilder(
                 Stores.persistentKeyValueStore("busPositionStore"),
                 Serdes.String(),
                 Serdes.serdeFrom(serdeBusPosition.serializer(), serdeBusPosition.deserializer()));
@@ -62,10 +63,10 @@ public class RtdStreamer {
         builder.addStateStore(busPositionStore);
 
         // stream positions from the rtd-bus-position topic
-        final KStream<String, BusPosition> rtdBusPositionStream = builder.stream("rtd-bus-position");
+        final KStream<String, BusPositionFeed> rtdBusPositionStream = builder.stream("rtd-bus-position");
 
         // calculate the speed using the Haversine transform
-        final KStream<String, BusPosition> rtdBusPositionStreamEnriched =
+        final KStream<String, BusPositionSpeed> rtdBusPositionStreamEnriched =
                 rtdBusPositionStream.transform(new HaversineTransformerSupplier("busPositionStore"), "busPositionStore");
 
         // write enriched records, i.e. records with speed based on the previous position, to the rtd-bus-position-enriched topic

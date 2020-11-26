@@ -1,7 +1,7 @@
 {
    "namespace": "io.woolford.rtd",
    "type": "record",
-   "name": "BusPosition",
+   "name": "BusPositionSpeed",
    "fields": [
      {"name": "id", "type": "string"},
      {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},

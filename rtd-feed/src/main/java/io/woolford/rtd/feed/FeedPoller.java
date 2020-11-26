@@ -1,7 +1,7 @@
 package io.woolford.rtd.feed;
 
 import com.google.transit.realtime.GtfsRealtime;
-import io.woolford.rtd.BusPosition;
+import io.woolford.rtd.BusPositionFeed;
 import io.woolford.rtd.Location;
 import kong.unirest.Unirest;
 import org.slf4j.Logger;
@@ -31,7 +31,9 @@ public class FeedPoller {
     private String rtdPassword;
 
     @Autowired
-    KafkaTemplate<String, BusPosition> kafkaTemplate;
+    KafkaTemplate<String, BusPositionFeed> kafkaTemplate;
+
+    //TODO: use two different classes to eliminate the 0 mph field. There should never be "facts" that aren't true.
 
     @Scheduled(cron = "*/30 * * * * *")
     private void getBusPositions() {
@@ -59,13 +61,13 @@ public class FeedPoller {
                                 location.setLat(vehiclePosition.getPosition().getLatitude());
                                 location.setLon(vehiclePosition.getPosition().getLongitude());
 
-                                BusPosition busPosition = new BusPosition();
+                                BusPositionFeed busPosition = new BusPositionFeed();
 
                                 busPosition.setId(vehiclePosition.getVehicle().getId());
                                 busPosition.setTimestamp(vehiclePosition.getTimestamp());
                                 busPosition.setLocation(location);
 
-                                Message<BusPosition> message = MessageBuilder
+                                Message<BusPositionFeed> message = MessageBuilder
                                         .withPayload(busPosition)
                                         .setHeader(KafkaHeaders.TOPIC, "rtd-bus-position")
                                         .setHeader(KafkaHeaders.MESSAGE_KEY, entity.getVehicle().getVehicle().getId())

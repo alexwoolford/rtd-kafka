@@ -2,7 +2,7 @@
 
 The __rtd-feed__ module publishes the latest Denver RTD vehicle positions, every 30 seconds, to the `rtd-bus-position` Kafka topic.
 
-The messages are serialized as Avro and look like this where deserialized:
+The messages are serialized as Avro and look like this when deserialized:
 
     {
       "id": "985CC5EC1D3FC176E053DD4D1FAC4E39",
@@ -10,8 +10,7 @@ The messages are serialized as Avro and look like this where deserialized:
       "location": {
         "lon": -104.98970794677734,
         "lat": 39.697723388671875
-      },
-      "milesPerHour": 0
+      }
     }
 
 The message key is the vehicle ID, which means that telemetry for a vehicle is always sent to the same Kafka partition.
@@ -125,3 +124,22 @@ And then, to run `rtd-feed` and `rtd-stream`, export the environment variables:
     java -jar rtd-feed/target/feed-0.1-spring-boot.jar
     java -jar rtd-stream/target/rtd-stream-1.0-jar-with-dependencies.jar
 
+
+[//]: # (TODO: hexagons to identify speed anomalies - possibly add to streams job)
+
+
+
+[//]: # ({
+    "connection.url": "http://elastic.woolford.io:9200",
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.ignore": "true",
+    "name": "rtd-elastic",
+    "schema.ignore": "true",
+    "topics": "rtd-bus-position-enriched",
+    "transforms": "routeTS",
+    "transforms.routeTS.timestamp.format": "yyyyMMdd",
+    "transforms.routeTS.topic.format": "${topic}-${timestamp}",
+    "transforms.routeTS.type": "org.apache.kafka.connect.transforms.TimestampRouter",
+    "type.name": "_doc"
+})

@@ -1,7 +1,7 @@
 {
    "namespace": "io.woolford.rtd",
    "type": "record",
-   "name": "BusPosition",
+   "name": "BusPositionFeed",
    "fields": [
      {"name": "id", "type": "string"},
      {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},
@@ -15,7 +15,6 @@
            {"name": "lat", "type": "double"}
          ]
        }
-     },
-     {"name": "milesPerHour", "type": "double"}
+     }
    ]
 }

@@ -1,5 +1,6 @@
 package io.woolford.rtd.feed;
 
+import io.woolford.rtd.BusPositionFeed;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,12 +58,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, io.woolford.rtd.BusPosition> producerFactory() {
+    public ProducerFactory<String, BusPositionFeed> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String, io.woolford.rtd.BusPosition> kafkaTemplate() {
+    public KafkaTemplate<String, BusPositionFeed> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
