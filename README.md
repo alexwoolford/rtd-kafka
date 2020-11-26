@@ -128,7 +128,6 @@ And then, to run `rtd-feed` and `rtd-stream`, export the environment variables:
 [//]: # (TODO: hexagons to identify speed anomalies - possibly add to streams job)
 
 
-
 [//]: # ({
     "connection.url": "http://elastic.woolford.io:9200",
     "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
@@ -143,3 +142,28 @@ And then, to run `rtd-feed` and `rtd-stream`, export the environment variables:
     "transforms.routeTS.type": "org.apache.kafka.connect.transforms.TimestampRouter",
     "type.name": "_doc"
 })
+
+
+[//]: # (TODO: see which fields are _always_ there and, if any of 'em are interesting, capture them in the Avro payload
+id: "1606401051_1530"
+vehicle {
+  trip {
+    trip_id: "113492947"
+    schedule_relationship: SCHEDULED
+    route_id: "104L"
+    direction_id: 0
+  }
+  position {
+    latitude: 39.842
+    longitude: -104.74735
+    bearing: 185.0
+  }
+  current_status: IN_TRANSIT_TO
+  timestamp: 1606401020
+  stop_id: "34650"
+  vehicle {
+    id: "1530"
+    label: "1530"
+  }
+})
+

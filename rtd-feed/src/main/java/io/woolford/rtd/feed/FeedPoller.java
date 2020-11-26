@@ -64,7 +64,7 @@ public class FeedPoller {
                                 BusPositionFeed busPosition = new BusPositionFeed();
 
                                 busPosition.setId(vehiclePosition.getVehicle().getId());
-                                busPosition.setTimestamp(vehiclePosition.getTimestamp());
+                                busPosition.setTimestamp(vehiclePosition.getTimestamp() * 1000); // convert seconds to Avro-friendly millis
                                 busPosition.setLocation(location);
 
                                 Message<BusPositionFeed> message = MessageBuilder

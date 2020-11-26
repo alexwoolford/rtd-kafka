@@ -51,14 +51,14 @@ public final class HaversineTransformerSupplier implements TransformerSupplier<S
 
                     // calculate distance and time between last two measurements
                     HaversineDistanceCalculator haversineDistanceCalculator = new HaversineDistanceCalculator();
-                    double distance = haversineDistanceCalculator.calculateDistance(
+                    double distanceKm = haversineDistanceCalculator.calculateDistance(
                             previousBusPosition.getLocation().getLat(),
                             previousBusPosition.getLocation().getLon(),
                             busPosition.getLocation().getLat(),
                             busPosition.getLocation().getLon()); // distance is in kilometers
 
-                    long timedelta = busPosition.getTimestamp() - previousBusPosition.getTimestamp(); // time delta is in seconds
-                    double milesPerHour = calculateMilesPerHour(distance, timedelta);
+                    long timeDeltaMillis = busPosition.getTimestamp() - previousBusPosition.getTimestamp();
+                    double milesPerHour = calculateMilesPerHour(distanceKm * 1000, timeDeltaMillis / 1000);
                     busPositionSpeed.setMilesPerHour(milesPerHour);
 
                 }
@@ -80,7 +80,7 @@ public final class HaversineTransformerSupplier implements TransformerSupplier<S
         if (seconds == 0){
             return 0;
         } else {
-            double metersPerSecond = meters * 1000 / seconds;
+            double metersPerSecond = meters / seconds;
             return metersPerSecond * 2.2369;
         }
     }
