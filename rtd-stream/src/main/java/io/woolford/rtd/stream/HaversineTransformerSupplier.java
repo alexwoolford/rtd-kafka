@@ -44,6 +44,7 @@ public final class HaversineTransformerSupplier implements TransformerSupplier<S
                 busPositionSpeed.setId(busPosition.getId());
                 busPositionSpeed.setTimestamp(busPosition.getTimestamp());
                 busPositionSpeed.setLocation(busPosition.getLocation());
+                busPositionSpeed.setBearing(busPosition.getBearing());
                 busPositionSpeed.setMilesPerHour(0);
 
                 // if there is a previous location for that bus ID, calculate the speed based on its previous position/timestamp.

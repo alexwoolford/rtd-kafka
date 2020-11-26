@@ -32,8 +32,6 @@ public class RtdStreamer {
 
         //TODO: add gauges/counters, etc... so they can be exposed in Prometheus
 
-        //TODO: add bearing
-
         //TODO: consider different version of the schema so the initial position doesn't have a field that contains a
         // mph of zero for every record
 
