@@ -33,8 +33,6 @@ public class FeedPoller {
     @Autowired
     KafkaTemplate<String, BusPositionFeed> kafkaTemplate;
 
-    //TODO: use two different classes to eliminate the 0 mph field. There should never be "facts" that aren't true.
-
     @Scheduled(cron = "*/30 * * * * *")
     private void getBusPositions() {
         try {

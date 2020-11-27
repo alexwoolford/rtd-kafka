@@ -62,6 +62,12 @@
             <version>${confluent.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.uber</groupId>
+            <artifactId>h3</artifactId>
+            <version>3.6.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>

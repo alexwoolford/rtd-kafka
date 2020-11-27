@@ -24,10 +24,11 @@ The __rtd-stream__ module is a Kafka Streams job that enriches the feed data wit
         "lon": -104.98970794677734,
         "lat": 39.697723388671875
       },
-      "milesPerHour": 34.18513011763098
+      "milesPerHour": 34.18513011763098,
+      "h3": "8c268cd8d171dff"
     }
 
-Note that the milesPerHour has been updated.
+Note that the `milesPerHour` and `h3` properties have been added. The `h3` is a hierarchical spatial index, designed by Uber. See [eng.uber.com/h3](https://eng.uber.com/h3/) for more details. The `h3` is at resolution 12 - which equates to hexagons that are approx. 307 square meters.
 
 The `rtd-stream` module reads in Kafka and Schema Registry properties from environment variables.
 
@@ -123,9 +124,6 @@ And then, to run `rtd-feed` and `rtd-stream`, export the environment variables:
 
     java -jar rtd-feed/target/feed-0.1-spring-boot.jar
     java -jar rtd-stream/target/rtd-stream-1.0-jar-with-dependencies.jar
-
-
-[//]: # (TODO: hexagons to identify speed anomalies - possibly add to streams job)
 
 
 [//]: # ({

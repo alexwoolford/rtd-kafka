@@ -1,6 +1,7 @@
 package io.woolford.rtd.stream;
 
 
+import com.uber.h3core.H3Core;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import io.woolford.rtd.BusPositionFeed;
 import io.woolford.rtd.BusPositionSpeed;
@@ -16,6 +17,7 @@ import org.apache.kafka.streams.state.Stores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -31,9 +33,6 @@ public class RtdStreamer {
         //TODO: create required topics, e.g. "Could not create topic rtd-stream-busPositionStore-changelog"
 
         //TODO: add gauges/counters, etc... so they can be exposed in Prometheus
-
-        //TODO: consider different version of the schema so the initial position doesn't have a field that contains a
-        // mph of zero for every record
 
         //TODO: there *must* be a better way to handle properties
 
@@ -67,8 +66,33 @@ public class RtdStreamer {
         final KStream<String, BusPositionSpeed> rtdBusPositionStreamEnriched =
                 rtdBusPositionStream.transform(new HaversineTransformerSupplier("busPositionStore"), "busPositionStore");
 
-        // write enriched records, i.e. records with speed based on the previous position, to the rtd-bus-position-enriched topic
-        rtdBusPositionStreamEnriched.to("rtd-bus-position-enriched");
+        // remove any enriched records with impossible speeds (i.e. > 140 mph), add the Uber H3 hexagon, and write
+        // those records to the rtd-bus-position-enriched topic.
+        rtdBusPositionStreamEnriched
+                .filter((key, busPositionSpeed) -> busPositionSpeed.getMilesPerHour() < 140)
+                .mapValues(busPositionSpeed -> {
+
+                    H3Core h3 = null;
+                    String hexAddr = "";
+                    try {
+                        // a resolution of 12 divides the land into hexagons that are about 307 square meters
+                        // See https://github.com/uber/h3/blob/master/docs/core-library/restable.md and plug the hexagon
+                        // area into https://www.wolframalpha.com/ to translate
+
+                        h3 = H3Core.newInstance();
+                        hexAddr = h3.geoToH3Address(busPositionSpeed.getLocation().getLat(),
+                                                    busPositionSpeed.getLocation().getLon(),
+                                                12);
+
+                    } catch (IOException e) {
+                        LOG.error("Error creating H3 address for location: " + busPositionSpeed.getLocation());
+                        LOG.error(e.getMessage());
+                    }
+
+                    busPositionSpeed.setH3(hexAddr);
+                    return busPositionSpeed;
+                })
+                .to("rtd-bus-position-enriched");
 
         // run it
         final Topology topology = builder.build();

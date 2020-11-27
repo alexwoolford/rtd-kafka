@@ -17,6 +17,7 @@
        }
      },
      {"name": "bearing", "type": "double"},
-     {"name": "milesPerHour", "type": "double"}
+     {"name": "milesPerHour", "type": "double"},
+     {"name": "h3", "type": "string"}
    ]
 }
