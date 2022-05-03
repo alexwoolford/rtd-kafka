@@ -1,5 +1,6 @@
 package io.woolford.rtd.feed;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.woolford.rtd.BusPositionFeed;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -52,7 +53,7 @@ public class KafkaConfig {
         props.put("schema.registry.basic.auth.user.info", schemaRegistryBasicAuthUserInfo);
 
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
 
         return props;
     }

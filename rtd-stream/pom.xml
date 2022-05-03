@@ -12,28 +12,31 @@
     <artifactId>rtd-stream</artifactId>
 
     <properties>
-        <confluent.version>6.0.0</confluent.version>
-        <kafka.version>2.6.0</kafka.version>
-        <avro.version>1.10.0</avro.version>
+        <confluent.version>7.1.1</confluent.version>
+        <kafka.version>3.1.0</kafka.version>
+        <avro.version>1.11.0</avro.version>
         <slf4j.version>1.7.30</slf4j.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
             <version>${kafka.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>monitoring-interceptors</artifactId>
-            <version>${confluent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -100,8 +103,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
 <!--                <version>3.8.1</version>-->
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>
