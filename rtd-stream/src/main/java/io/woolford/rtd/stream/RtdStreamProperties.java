@@ -11,15 +11,10 @@ public class RtdStreamProperties {
 
         props.setProperty("application.id", "rtd-stream");
 
-
         // Kafka properties
         props.setProperty("bootstrap.servers", System.getenv("BOOTSTRAP_SERVERS"));
 
         // option properties for a secure cluster
-        if (System.getenv("SECURITY_PROTOCOL") != null) {
-            props.setProperty("security.protocol", System.getenv("SECURITY_PROTOCOL"));
-        }
-
         if (System.getenv("SASL_JAAS_CONFIG") != null) {
             props.setProperty("sasl.jaas.config", System.getenv("SASL_JAAS_CONFIG"));
         }
@@ -31,7 +26,6 @@ public class RtdStreamProperties {
         if (System.getenv("SASL_MECHANISM") != null) {
             props.setProperty("sasl.mechanism", System.getenv("SASL_MECHANISM"));
         }
-
 
         // Schema Registry properties
         props.setProperty("schema.registry.url", System.getenv("SCHEMA_REGISTRY_URL"));
